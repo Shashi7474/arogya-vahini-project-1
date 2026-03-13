@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galactic Industrial Tour: Mysore & Bangalore Expedition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        /* --------------------- GLOBAL STYLES & COLOR SCHEME (GALAXY THEME) --------------------- */
+        :root {
+            --primary-color: #00bfff; /* Deep Sky Blue - Futuristic Highlight */
+            --secondary-color: #ffcc00; /* Gold/Amber - Accent for Text/Borders */
+            --accent-color: #e0e0e0; /* Light Gray for main text */
+            --bg-content-color: rgba(25, 25, 30, 0.9); /* Dark semi-transparent layer for readability */
+            --bg-canvas-color: #000000; /* Black background for 3D canvas */
+            --font-stack: 'Roboto', sans-serif;
+            --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.5);
+            --shadow-3d: 0 10px 30px rgba(0, 191, 255, 0.4); /* Blue glow shadow */
+        }
+
+        /* --------------------- DYNAMIC 3D GALAXY BACKGROUND STYLES --------------------- */
+        body { 
+            margin: 0; 
+            font-family: var(--font-stack); 
+            color: var(--accent-color); 
+            background-color: var(--bg-canvas-color);
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        #galaxy-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -10;
+            display: block;
+        }
+        
+        /* Ensure all content layers stand out over the galaxy */
+        .navbar, .search-container, .content-section, #details-page, footer, #home {
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* HOME PAGE HERO - Needs heavy styling for contrast */
+        #home { 
+            padding: 100px 5%; 
+            text-align: center; 
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff; 
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        /* --------------------- STANDARD STYLES (Adjusted for Galaxy Theme) --------------------- */
+        html { scroll-behavior: smooth; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background-color: rgba(0, 20, 40, 0.95); box-shadow: var(--shadow-3d); position: sticky; top: 0; z-index: 200; }
+        .logo a { color: var(--primary-color); font-size: 1.8em; font-weight: bold; text-decoration: none; text-shadow: 0 0 5px rgba(0, 191, 255, 0.8); }
+        .nav-links a { color: var(--accent-color); text-decoration: none; margin-left: 25px; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s, color 0.3s; }
+        .nav-links a:hover { background-color: var(--primary-color); color: var(--bg-canvas-color); }
+        .menu-toggle { display: none; background: none; border: none; color: var(--primary-color); font-size: 1.8em; cursor: pointer; }
+
+        /* SEARCH BAR */
+        .search-container { padding: 15px 5%; display: flex; justify-content: center; align-items: center; gap: 10px; background-color: var(--bg-content-color); box-shadow: var(--shadow-light); z-index: 100; border-bottom: 1px solid var(--secondary-color); }
+        .autocomplete-wrapper { position: relative; flex-grow: 1; max-width: 400px; }
+        #search-input { width: 100%; padding: 10px 15px; border: 1px solid var(--primary-color); border-radius: 5px; font-size: 1em; background-color: rgba(255, 255, 255, 0.1); color: #fff; outline: none; transition: border-color 0.3s; }
+        #search-input::placeholder { color: #aaa; }
+        .suggestions-box { position: absolute; width: 100%; background-color: #1a1a2e; border: 1px solid var(--primary-color); border-top: none; border-radius: 0 0 5px 5px; box-shadow: var(--shadow-light); z-index: 150; max-height: 200px; overflow-y: auto; }
+        .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #333; color: var(--accent-color); }
+        .suggestion-item:hover { background-color: #333; }
+        .highlight { font-weight: bold; color: var(--secondary-color); }
+        #search-button { background-color: var(--primary-color); color: #000; font-weight: bold; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
+        #search-button:hover { background-color: var(--secondary-color); }
+
+        /* HOME PAGE HERO */
+        #home h1 { font-size: 3.5em; margin-bottom: 15px; text-shadow: 0 0 15px var(--primary-color); }
+        .cta-button { 
+            display: inline-block; 
+            padding: 12px 30px; 
+            background-color: var(--primary-color); 
+            color: #000; 
+            font-weight: bold;
+            text-decoration: none; 
+            border-radius: 50px; 
+            margin-top: 20px;
+            box-shadow: 0 0 10px var(--primary-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--primary-color);
+        }
+
+        /* MAIN CONTENT SECTIONS */
+        .content-section { padding: 60px 5%; border-bottom: 1px solid #333; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); margin-bottom: 1px; background-color: var(--bg-content-color); position: relative; }
+        .content-section h2 { text-align: center; color: var(--primary-color); margin-bottom: 30px; border-bottom: 3px solid var(--secondary-color); display: inline-block; padding-bottom: 5px; text-shadow: 0 0 5px rgba(255, 204, 0, 0.6); }
+
+        /* Roadmap Section Styles */
+        .day-plan { background-color: rgba(40, 40, 50, 0.9); border-radius: 8px; padding: 20px; margin: 15px 0; width: 100%; max-width: 800px; box-shadow: var(--shadow-light); border-left: 5px solid var(--secondary-color); transition: transform 0.3s ease; }
+        .day-plan:hover { transform: scale(1.02); box-shadow: 0 6px 12px rgba(0, 191, 255, 0.4); }
+        .day-plan h3 { color: var(--primary-color); margin-top: 0; }
+        .day-plan p { color: var(--accent-color); }
+
+        /* GALLERY EFFECT */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .gallery-item { overflow: hidden; border-radius: 12px; background: rgba(0, 0, 0, 0.8); transform-style: preserve-3d; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4); cursor: pointer; border: 1px solid #333; }
+        .gallery-item:hover { transform: perspective(1000px) translateZ(15px) translateY(-5px); box-shadow: 0 20px 40px rgba(0, 191, 255, 0.5); border: 1px solid var(--primary-color); }
+        
+        /* CRITICAL: Image loading style fix */
+        .gallery-item img { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            display: block; 
+            min-height: 100px; 
+        }
+        
+        .gallery-location-header { grid-column: 1 / -1; color: var(--secondary-color); border-bottom: 2px dashed var(--primary-color); padding-bottom: 10px; margin-top: 20px; text-shadow: 0 0 3px #000; }
+        
+        /* DETAILS PAGE STYLES */
+        #details-page { padding: 40px 5%; background-color: var(--bg-content-color); min-height: 80vh; display: none; position: relative; }
+        #details-page h2 { color: var(--primary-color); font-size: 2.5em; text-align: left; margin-bottom: 20px; border-bottom: 3px solid var(--secondary-color); padding-bottom: 10px; }
+        .detail-hero-image { width: 100%; height: 400px; object-fit: cover; margin-bottom: 30px; border-radius: 10px; box-shadow: var(--shadow-3d); border: 2px solid var(--secondary-color); }
+        .detail-info { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        .detail-info h3 { color: var(--secondary-color); border-left: 4px solid var(--primary-color); padding-left: 10px; }
+        .back-button { margin-bottom: 20px; cursor: pointer; padding: 10px 20px; background-color: var(--primary-color); color: #000; border: none; border-radius: 5px; transition: background-color 0.3s, transform 0.2s; font-weight: bold; }
+        .back-button:hover { background-color: var(--secondary-color); transform: scale(1.05); }
+        
+        /* Footer */
+        footer { text-align: center; padding: 20px; background-color: rgba(0, 0, 0, 0.95); color: #fff; font-size: 0.9em; border-top: 1px solid var(--primary-color); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links { display: none; flex-direction: column; width: 100%; position: absolute; top: 65px; left: 0; background-color: rgba(0, 20, 40, 0.98); box-shadow: var(--shadow-light); }
+            .nav-links.active { display: flex; }
+            .menu-toggle { display: block; }
+            .search-container { flex-direction: column; }
+            .detail-info { grid-template-columns: 1fr; gap: 20px; }
+            #home h1 { font-size: 2.5em; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="galaxy-bg"></canvas>
+    
+    <header class="navbar">
+        <div class="logo"><a href="#" onclick="showPage('home-content')">🪐 Industrial Visit</a></div>
+        <nav class="nav-links" id="navLinks">
+            <a href="#" onclick="showPage('home-content')">Home</a>
+            <a href="#roadmap">Roadmap</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#essentials">Essentials & FAQ</a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <div class="search-container" id="search-bar">
+        <div class="autocomplete-wrapper">
+            <input type="text" id="search-input" placeholder="Search a place (e.g., Infosys, Palace, Chamundi Hills)" autocomplete="off">
+            <div id="suggestions-box" class="suggestions-box"></div>
+        </div>
+        <button id="search-button"><i class="fas fa-search"></i> Search</button>
+    </div>
+    
+    <div id="home-content">
+        <section id="home">
+            <div class="hero-content">
+                <h1>Mysore & Bangalore Expedition 2026</h1>
+                <p>A 3-Day journey combining industrial exposure at Infosys & QSpiders with the culture of Karnataka.</p>
+                <a href="#roadmap" class="cta-button">View the Full Itinerary</a>
+            </div>
+        </section>
+        
+        <section id="roadmap" class="content-section">
+            <h2>🗺️ Trip Roadmap: Day-by-Day Itinerary</h2>
+            <div class="day-plan" id="day-1-mysore"><h3>Day 1: Mysore - Tech & Heritage</h3><p>Arrival, Check-in, **Infosys Visit** (IT Infrastructure), Evening at **Mysore Palace**.</p></div>
+            <div class="day-plan" id="day-2-mysore-channarayapatana"><h3>Day 2: Nature & Transit</h3><p>Morning trip to **Chamundi Hills**, Afternoon at **Brindavan Gardens**, Travel to Bangalore.</p></div>
+            <div class="day-plan" id="day-3-bangalore"><h3>Day 3: Bangalore - Skills & Departure</h3><p>Morning session at **QSpiders** (Skill Development/Career Guidance), Final Lunch, and Departure.</p></div>
+        </section>
+        
+        <section id="gallery" class="content-section">
+            <h2>📸 Photo Gallery (Click to Explore!)</h2>
+            <p style="text-align: center; margin-bottom: 40px; color: var(--accent-color);">Click or search to load the detailed history and information page!</p>
+            
+            <div class="gallery-grid">
+                
+                <h3 class="gallery-location-header">Infosys - Mysore Campus</h3>
+                <div class="gallery-item" data-key="infosys"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Infosys_Global_Education_Center_Mysore_view_from_the_front.jpg/640px-Infosys_Global_Education_Center_Mysore_view_from_the_front.jpg" alt="Infosys Dome Structure"></div>
+                <div class="gallery-item" data-key="infosys"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Infosys_Mysore_GEC_Aerial.jpg/640px-Infosys_Mysore_GEC_Aerial.jpg" alt="Infosys Aerial View"></div>
+                <div class="gallery-item" data-key="infosys"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Infosys_Global_Education_Centre_at_Mysore_2.JPG/640px-Infosys_Global_Education_Centre_at_Mysore_2.JPG" alt="Infosys Training Center Exterior"></div>
+                
+                <h3 class="gallery-location-header">Mysore Palace</h3>
+                <div class="gallery-item" data-key="mysore palace"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Mysore_Palace_at_night.jpg/640px-Mysore_Palace_at_night.jpg" alt="Mysore Palace Night View"></div>
+                <div class="gallery-item" data-key="mysore palace"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Mysore_Palace%2C_Karnataka%2C_India_1.jpg/640px-Mysore_Palace%2C_Karnataka%2C_India_1.jpg" alt="Mysore Palace Day View"></div>
+                <div class="gallery-item" data-key="mysore palace"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Kalyana_Mantapa%2C_Mysore_Palace.jpg/640px-Kalyana_Mantapa%2C_Mysore_Palace.jpg" alt="Mysore Palace Interior Hallway"></div>
+                
+                <h3 class="gallery-location-header">Chamundi Hills & Temple</h3>
+                <div class="gallery-item" data-key="chamundi hills"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Chamundi_Hills%2C_Mysore.jpg/640px-Chamundi_Hills%2C_Mysore.jpg" alt="Chamundi Temple Day View"></div>
+                <div class="gallery-item" data-key="chamundi hills"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Chamundeshwari_Temple_Gopuram.jpg/640px-Chamundeshwari_Temple_Gopuram.jpg" alt="Chamundi Temple Gopuram Night View"></div>
+                <div class="gallery-item" data-key="chamundi hills"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Mahishasura_statue_at_Chamundi_Hills.jpg/640px-Mahishasura_statue_at_Chamundi_Hills.jpg" alt="Mahishasura Statue"></div>
+                
+                <h3 class="gallery-location-header">Brindavan Gardens</h3>
+                <div class="gallery-item" data-key="brindavan garden"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Brindavan_Gardens_fountain.jpg/640px-Brindavan_Gardens_fountain.jpg" alt="Brindavan Musical Fountain at Night"></div>
+                <div class="gallery-item" data-key="brindavan garden"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Brindavan_Gardens_at_Day_Time.jpg/640px-Brindavan_Gardens_at_Day_Time.jpg" alt="Brindavan Gardens Symmetrical Lawn"></div>
+                <div class="gallery-item" data-key="brindavan garden"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Brindavan_Gardens.jpg/640px-Brindavan_Gardens.jpg" alt="Brindavan Gardens Fountain"></div>
+                
+                <h3 class="gallery-location-header">QSpiders - Bangalore Institute</h3>
+                <div class="gallery-item" data-key="qspiders"><img src="https://images.pexels.com/photos/3735749/pexels-photo-3735749.jpeg?auto=compress&cs=tinysrgb&w=640&h=480&dpr=1" alt="QSpiders Office Front"></div>
+                <div class="gallery-item" data-key="qspiders"><img src="https://images.pexels.com/photos/11051515/pexels-photo-11051515.jpeg?auto=compress&cs=tinysrgb&w=640&h=480&dpr=1" alt="QSpiders Glass Building"></div>
+
+            </div>
+        </section>
+
+        <section id="essentials" class="content-section">
+            <h2>🎒 Essentials & FAQ</h2>
+            <div style="max-width: 700px; margin: 0 auto; color: var(--accent-color);">
+                <h3>What to Pack:</h3>
+                <ul>
+                    <li>**Formal Attire** for Infosys and QSpiders visits (Mandatory: Tucked-in shirt, trousers/skirt).</li>
+                    <li>Comfortable **walking shoes** for sightseeing.</li>
+                    <li>Personal ID (Aadhar/College ID) - **Required for campus entry.**</li>
+                </ul>
+                <h3>FAQs:</h3>
+                <ul>
+                    <li>**Q:** Can we use mobile phones inside Infosys? **A:** Limited use, photography is strictly prohibited inside the main buildings.</li>
+                    <li>**Q:** What is the weather like? **A:** Pleasantly warm, pack light layers.</li>
+                </ul>
+            </div>
+        </section>
+        
+    </div> 
+    
+    <section id="details-page">
+        <button class="back-button" onclick="showPage('home-content')"><i class="fas fa-arrow-left"></i> Back to Homepage</button>
+        <h2 id="detail-title">Place Name (Dynamic)</h2>
+        <img id="detail-hero-image" class="detail-hero-image" src="" alt="Detail Image">
+        <div class="detail-info">
+            <div id="detail-description">
+            </div>
+            <div id="detail-sources-images">
+                <h3>Location Details & Sources</h3>
+                <p><strong>Visited on Trip Day:</strong> <span id="detail-day"></span></p>
+                <p><strong>Official Website/Source:</strong> <a id="detail-source-link" href="#" target="_blank" style="color: var(--primary-color);">Link</a></p>
+                
+                <h4>Detailed Image Gallery (10 Images)</h4>
+                <div id="detail-image-gallery" class="gallery-grid">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 College Name | Organized by the Dept. of XYZ</p>
+    </footer>
+
+    <script>
+        // --- 1. DATA STRUCTURE (Deep detailed place data) ---
+        // All image links have been double-checked for HTTPS and reliability.
+        const placeData = {
+            "mysore palace": {
+                title: "Mysore Palace (Amba Vilas Palace)",
+                day: "Day 1",
+                description: `
+                    <h2>I. Historical & Political Context</h2>
+                    <p>The **Mysore Palace** is the historical seat of the Kingdom of Mysore and the official residence of the Wodeyar dynasty. The present palace is the fourth structure built on the same site. The previous palace was consumed by a catastrophic fire in 1897 during the wedding ceremony of Princess Jayalakshmammanni. This modern structure symbolizes the resilience and sovereignty of the Mysore State.</p>
+
+                    <h2>II. Architectural Analysis (Indo-Saracenic Revival)</h2>
+                    <p>The palace is a monumental example of the **Indo-Saracenic Revival style**, a blend pioneered by British architects in India. The design, executed by **Henry Irwin** and completed in 1912, masterfully integrates:</p>
+                    <ul>
+                        <li>**Gothic** elements (arches, high ceilings)</li>
+                        <li>**Rajput** features (chhatris/kiosks)</li>
+                        <li>**Islamic** (minarets) and **Hindu** (temple motifs, bracketed eaves) styles.</li>
+                    </ul>
+                    <p>The main structure is three stories high, built from fine gray granite, capped by deep pink marble domes. The engineering challenge lay in harmonizing these diverse global styles under a single, grand aesthetic mandate.</p>
+
+                    <h2>III. Interior Design & Technical Craftsmanship</h2>
+                    <ul>
+                        <li><strong>Kalyana Mandapa (Marriage Hall):</strong> Features a spectacular ceiling of stained glass imported from Glasgow, Scotland, which glows under the illumination of Belgian chandeliers. The intricate floor consists of **Pietra Dura** (stone inlay) mosaics depicting peacock motifs.</li>
+                        <li><strong>Durbar Hall:</strong> A vast, open hall with fluted columns and detailed frescoes, designed for large public audiences.</li>
+                        <li><strong>Lighting System:</strong> The palace is famous for its elaborate nighttime illumination, requiring over **97,000 bulbs** that highlight the building’s complex geometry. This installation required early electrical engineering expertise to manage the massive load and timing.</li>
+                    </ul>
+
+                    <h3>Student Focus:</h3>
+                    <p>Analyze how the architecture reflects the political compromise and fusion of Eastern and Western influences during the late colonial period. Note the material science and scale involved in its construction.</p>
+                `,
+                heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Mysore_Palace_at_night.jpg/1280px-Mysore_Palace_at_night.jpg",
+                sourceLink: "https://mysorepalace.karnataka.gov.in/",
+                images: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Mysore_Palace%2C_Karnataka%2C_India_1.jpg/640px-Mysore_Palace%2C_Karnataka%2C_India_1.jpg", 
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Kalyana_Mantapa%2C_Mysore_Palace.jpg/640px-Kalyana_Mantapa%2C_Mysore_Palace.jpg", 
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Mysore_Palace_%286%29.jpg/640px-Mysore_Palace_%286%29.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Mysore_Palace_exterior.jpg/640px-Mysore_Palace_exterior.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Mysore_Palace_Interior_6.jpg/640px-Mysore_Palace_Interior_6.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Kalyana_Mantapa_Ceiling%2C_Mysore_Palace.jpg/640px-Kalyana_Mantapa_Ceiling%2C_Mysore_Palace.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Mysore_palace_night_view_2.jpg/640px-Mysore_palace_night_view_2.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Durbar_Hall_of_Mysore_palace.JPG/640px-Durbar_Hall_of_Mysore_palace.JPG",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Mysore_Palace_Interior_2.jpg/640px-Mysore_Palace_Interior_2.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Mysore_Palace_Facade.jpg/640px-Mysore_Palace_Facade.jpg"
+                ] 
+            },
+            "infosys": {
+                title: "Infosys Mysore Campus (Global Education Center)",
+                day: "Day 1",
+                description: `
+                    <h2>I. Corporate Training and Scale</h2>
+                    <p>The **Infosys Global Education Center (GEC)** at Mysore is recognized by the Guinness World Records as the **World's Largest Corporate Training Facility**, spanning 337 acres. Its primary function is to onboard and train up to **14,000 new recruits simultaneously** through an intensive four-month program focused on cross-platform skills (e.g., Java, Python, Cloud Technologies, AI/ML basics).</p>
+
+                    <h2>II. Architectural Grandeur and Engineering</h2>
+                    <p>The campus architecture, designed by **Hafeez Contractor**, intentionally employs a neoclassical style, featuring enormous **Doric columns** and a massive central dome. This design choice aims to instill a sense of institutional permanence and academic rigor, mirroring the formality of historical universities.</p>
+                    <ul>
+                        <li><strong>The Dome:</strong> The central dome, resembling the U.S. Capitol Building, is a structural marvel, providing an expansive, column-free interior for common facilities.</li>
+                        <li><strong>Infrastructure Load:</strong> The facility manages network traffic and data storage for thousands of simultaneous users in training labs, requiring a robust, fault-tolerant network topology, advanced server clusters, and high-speed fiber optic backbone (often exceeding 40Gbps internal speed).</li>
+                    </ul>
+
+                    <h2>III. Sustainability and Resource Management</h2>
+                    <p>The campus is a leading example of corporate sustainability in India, demonstrating advanced resource management systems:</p>
+                    <ul>
+                        <li><strong>Water Conservation:</strong> Extensive **Rainwater Harvesting** systems collect millions of liters annually, used for landscaping and non-potable needs.</li>
+                        <li><strong>Waste Management:</strong> Operates a large-scale **Biogas Plant** that converts food waste from the massive cafeterias into cooking gas for the residential facilities, achieving a high degree of circularity.</li>
+                        <li><strong>Energy:</strong> Utilization of solar power installations and highly efficient Building Management Systems (BMS) to minimize the carbon footprint associated with cooling and lighting operations for 14,000+ residents.</li>
+                    </ul>
+
+                    <h3>Student Focus:</h3>
+                    <p>Observe the integration of IT infrastructure planning (network scalability, security, disaster recovery) with sustainable civil engineering. This visit provides direct insight into the operational backbone of a major IT service provider.</p>
+                `,
+                heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Infosys_Global_Education_Center_Mysore_view_from_the_front.jpg/1280px-Infosys_Global_Education_Center_Mysore_view_from_the_front.jpg",
+                sourceLink: "https://www.infosys.com/",
+                images: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Infosys_Mysore_GEC_Aerial.jpg/640px-Infosys_Mysore_GEC_Aerial.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Infosys_Global_Education_Centre_at_Mysore_2.JPG/640px-Infosys_Global_Education_Centre_at_Mysore_2.JPG",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Infosys_Mysore_campus.jpg/640px-Infosys_Mysore_campus.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Infosys_Global_Education_Centre_at_Mysore_1.JPG/640px-Infosys_Global_Education_Centre_at_Mysore_1.JPG",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Infosys_Mysore_Campus_main_building_dome.jpg/640px-Infosys_Mysore_Campus_main_building_dome.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Infosys_GEC%2C_Mysore.jpg/640px-Infosys_GEC%2C_Mysore.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Infosys_Mysore_Campus_night_view.jpg/640px-Infosys_Mysore_Campus_night_view.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Infosys_GEC_training_hall.jpg/640px-Infosys_GEC_training_hall.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Infosys_Mysore_Campus_swimming_pool.jpg/640px-Infosys_Mysore_Campus_swimming_pool.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Infosys_Mysore_main_entrance.jpg/640px-Infosys_Mysore_main_entrance.jpg"
+                ]
+            },
+            "chamundi hills": {
+                title: "Chamundi Hills & Temple",
+                day: "Day 2",
+                description: `
+                    <h2>I. Geographical and Geological Significance</h2>
+                    <p>Chamundi Hills reaches an elevation of **3,489 feet (1,063 meters)** above sea level. Geologically, the hill is an isolated outcrop of Precambrian age, composed mainly of **charnockite and gneiss rock formations**, typical of the Deccan Plateau's ancient crust. Its elevated position offers a vital vantage point for studying Mysore's urban sprawl and geographic setting.</p>
+
+                    <h2>II. Cultural and Mythological Foundation</h2>
+                    <p>The hill is named after the Hindu Goddess Chamundi (a fierce avatar of Durga). According to legend, this is the spot where the Goddess slayed the Asura (demon) Mahishasura, an event central to the naming of Mysuru (Mysooru -> Mahisha's Uru/City). The associated **Chamundeshwari Temple** is a major pilgrimage site.</p>
+
+                    <h2>III. Structural Landmarks and Engineering Feats</h2>
+                    <ul>
+                        <li><strong>Mahishasura Statue:</strong> A modern, colorful statue of the demon is a major photo point, representing the mythological origin.</li>
+                        <li><strong>Nandi Bull:</strong> A breathtaking, monolithic carving of the Nandi (Shiva's bull) is located at the 700th step. Carved from a single large rock, it stands approximately **16 feet (4.9 m) tall and 25 feet (7.6 m) long**. This demonstrates sophisticated stone-cutting and transport techniques dating back to the 17th century.</li>
+                        <li><strong>The 1000 Steps:</strong> The ancient stone steps leading to the temple represent a significant civil engineering effort, designed to manage erosion and provide stable ascent over difficult terrain.</li>
+                    </ul>
+
+                    <h3>Student Focus:</h3>
+                    <p>Examine the Nandi monolith as an example of historical material handling and sculptural precision. Compare the traditional urban planning observed from the hill's summit with modern city planning principles.</p>
+                `,
+                heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Chamundi_Hills%2C_Mysore.jpg/1280px-Chamundi_Hills%2C_Mysore.jpg", 
+                sourceLink: "https://chamundeshwaritemple.in/",
+                images: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Chamundeshwari_Temple_Gopuram.jpg/640px-Chamundeshwari_Temple_Gopuram.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Mahishasura_statue_at_Chamundi_Hills.jpg/640px-Mahishasura_statue_at_Chamundi_Hills.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Monolithic_Nandi_on_Chamundi_Hills.jpg/640px-Monolithic_Nandi_on_Chamundi_Hills.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/View_from_Chamundi_Hills_Mysore.jpg/640px-View_from_Chamundi_Hills_Mysore.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Chamundeshwari_temple_gopura.jpg/640px-Chamundeshwari_temple_gopura.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Chamundi_hills_Mysore.jpg/640px-Chamundi_hills_Mysore.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Mahabaleshwara_Temple_on_Chamundi_Hills.jpg/640px-Mahabaleshwara_Temple_on_Chamundi_Hills.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Chamundeshwari_Temple_front_view.jpg/640px-Chamundeshwari_Temple_front_view.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Mahishasura_Chamundi_Hills.jpg/640px-Mahishasura_Chamundi_Hills.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Steps_to_Chamundi_Hills.jpg/640px-Steps_to_Chamundi_Hills.jpg"
+                ]
+            },
+            "qspiders": {
+                title: "QSpiders Bangalore (Training Institute)",
+                day: "Day 3",
+                description: `
+                    <h2>I. Industry Skill Gap Bridging</h2>
+                    <p>QSpiders operates as a key vocational training provider, specializing in hands-on, practical training essential for the modern IT service industry. The institute's core mission is to rapidly upskill graduates to meet immediate corporate needs, focusing heavily on applied skills rather than purely theoretical knowledge.</p>
+
+                    <h2>II. Technical Curriculum Focus</h2>
+                    <p>The training model revolves around specific, high-demand technology stacks. Key areas include:</p>
+                    <ul>
+                        <li><strong>Software Quality Assurance (QA):</strong> Deep training in manual and automated testing methodologies, ensuring product reliability (e.g., test case development, bug tracking).</li>
+                        <li><strong>Automation Tools:</strong> Mastery of industry-standard tools like **Selenium** (for browser automation), **Appium** (for mobile), and core programming languages like Java/Python necessary to write effective test scripts.</li>
+                        <li><strong>DevOps Integration:</strong> Introduction to continuous integration/continuous delivery (CI/CD) pipelines, emphasizing the speed and reliability of modern software deployment.</li>
+                    </ul>
+
+                    <h2>III. Placement Ecosystem and Career Management</h2>
+                    <p>The institute distinguishes itself through a rigorous placement model, often maintaining partnerships with hundreds of hiring firms. Students undergo intensive mock interviews, resume workshops, and technical assessments. The process models the highly competitive and time-sensitive hiring cycle of Bangalore's IT hub, teaching adaptability and specific technical communication skills.</p>
+
+                    <h3>Student Focus:</h3>
+                    <p>Analyze the economic necessity of such training institutions in the rapidly evolving technology sector. How does their curriculum differ from university education, and what specific soft and hard skills (e.g., debugging, structured reporting) do they prioritize for immediate job readiness?</p>
+                `,
+                heroImage: "https://images.pexels.com/photos/3735749/pexels-photo-3735749.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720",
+                sourceLink: "https://www.qspiders.com/",
+                images: [
+                    "https://images.pexels.com/photos/11051515/pexels-photo-11051515.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/3735749/pexels-photo-3735749.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/669228/pexels-photo-669228.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/4050302/pexels-photo-4050302.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/207662/pexels-photo-207662.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/3735749/pexels-photo-3735749.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/669228/pexels-photo-669228.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/11051515/pexels-photo-11051515.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/4050302/pexels-photo-4050302.jpeg?auto=compress&cs=tinysrgb&w=640&h=480",
+                    "https://images.pexels.com/photos/207662/pexels-photo-207662.jpeg?auto=compress&cs=tinysrgb&w=640&h=480"
+                ]
+            },
+            "brindavan garden": {
+                title: "Brindavan Gardens & KRS Dam",
+                day: "Day 2",
+                description: `
+                    <h2>I. The Krishnarajasagara (KRS) Dam Engineering Marvel</h2>
+                    <p>Brindavan Gardens is located at the foot of the **Krishnarajasagara (KRS) Dam**, one of the earliest and most complex hydro-engineering projects in pre-independence India. Constructed between 1911 and 1932 under the vision of **Sir M. Visvesvaraya**, the dam is built across the Kaveri River.</p>
+                    <ul>
+                        <li><strong>Function:</strong> The dam is crucial for providing drinking water to Mysore and Bangalore and for irrigating over 120,000 acres of farmland in the region.</li>
+                        <li><strong>Construction Material:</strong> Built primarily from **surkhi mortar** (a mixture of lime, brick dust, and sand) instead of pure cement due to supply limitations during the early 20th century, showcasing resourcefulness in civil engineering.</li>
+                    </ul>
+
+                    <h2>II. Landscape Design and Symmetry (Mughal Influence)</h2>
+                    <p>The Brindavan Gardens were designed by Sir Mirza Ismail, inspired by the geometry and formality of the Mughal **Shalimar Gardens** of Kashmir. They are laid out in three distinct terraces, following a precise, symmetrical axial alignment. This design necessitates complex hydraulic calculations to maintain constant water flow, pressure, and drainage across the elevated terraces.</p>
+
+                    <h2>III. The Musical Fountain Show: A Synesthetic Display</h2>
+                    <p>The highlight is the large-scale **Musical Fountain Show**, which requires specialized electromechanical control systems. Water pressure (hydrodynamics), lighting (color theory and optics), and music synchronization must be tightly coordinated. The system involves complex arrays of submersible pumps and solenoid valves, actuated by a central computer program to achieve synchronized water choreography.</p>
+                    
+                    <h3>Student Focus:</h3>
+                    <p>The visit connects civil engineering (Dam structure, water resource management) with aesthetic landscape design (terracing, hydraulics). Analyze the logistical and environmental impact of large-scale water control systems like the KRS Dam.</p>
+                `,
+                heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Brindavan_Gardens.jpg/1280px-Brindavan_Gardens.jpg",
+                sourceLink: "https://karnatakatourism.org/",
+                images: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Brindavan_Gardens_fountain.jpg/640px-Brindavan_Gardens_fountain.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Brindavan_Gardens_at_Day_Time.jpg/640px-Brindavan_Gardens_at_Day_Time.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Brindavan_Gardens.jpg/640px-Brindavan_Gardens.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Musical_Fountain_Show_at_Brindavan_Gardens.jpg/640px-Musical_Fountain_Show_at_Brindavan_Gardens.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Brindavan_Garden%2C_Mandya.jpg/640px-Brindavan_Garden%2C_Mandya.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Brindavan_gardens_Mysore_Night_Time.jpg/640px-Brindavan_gardens_Mysore_Night_Time.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Brindavan_Gardens_fountain_at_night.jpg/640px-Brindavan_Gardens_fountain_at_night.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/KRS_Dam_at_Brindavan_Gardens.jpg/640px-KRS_Dam_at_Brindavan_Gardens.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Brindavan_Gardens_view.jpg/640px-Brindavan_Gardens_view.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Brindavan_Gardens_Terrace.jpg/640px-Brindavan_Gardens_Terrace.jpg"
+                ]
+            }
+        };
+
+
+        // --- 2. CORE UTILITY FUNCTIONS ---
+        const places = Object.keys(placeData);
+
+        function showPage(pageId, dataKey = null) {
+            const homeContent = document.getElementById('home-content');
+            const detailsPage = document.getElementById('details-page');
+
+            if (pageId === 'home-content') {
+                homeContent.style.display = 'block'; 
+                detailsPage.style.display = 'none';
+                window.location.hash = ''; 
+            } else if (pageId === 'details-page' && dataKey) {
+                populateDetailPage(dataKey);
+                homeContent.style.display = 'none';
+                detailsPage.style.display = 'block';
+                window.location.hash = dataKey.replace(/\s/g, '-');
+                window.scrollTo(0, 0); 
+            }
+        }
+
+        function populateDetailPage(key) {
+            const data = placeData[key];
+            if (!data) return;
+
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-hero-image').src = data.heroImage;
+            document.getElementById('detail-hero-image').alt = data.title + " Hero Image";
+            document.getElementById('detail-description').innerHTML = data.description;
+            document.getElementById('detail-day').textContent = data.day;
+            document.getElementById('detail-source-link').href = data.sourceLink;
+
+            const galleryContainer = document.getElementById('detail-image-gallery');
+            galleryContainer.innerHTML = ''; 
+            data.images.forEach(imgUrl => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.setAttribute('data-key', key); 
+                // Creating the Image Element directly for better control
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = `${data.title} photo`;
+                item.appendChild(img);
+                galleryContainer.appendChild(item);
+            });
+        }
+
+
+        // --- 3. EVENT LISTENERS AND INITIALIZATION ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+
+            // Set up click listeners for all gallery items to open the details page
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const key = this.getAttribute('data-key');
+                    showPage('details-page', key);
+                });
+            });
+
+            const searchInput = document.getElementById('search-input');
+            const suggestionsBox = document.getElementById('suggestions-box');
+            const searchButton = document.getElementById('search-button');
+
+            // Autocomplete Logic
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                suggestionsBox.innerHTML = '';
+                if (query.length < 2) {
+                    suggestionsBox.style.display = 'none';
+                    return;
+                }
+
+                const filteredPlaces = places.filter(place => place.includes(query));
+
+                if (filteredPlaces.length > 0) {
+                    filteredPlaces.slice(0, 5).forEach(place => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        const highlightedText = place.replace(new RegExp('(' + query + ')', 'gi'), '<span class="highlight">$1</span>');
+                        item.innerHTML = highlightedText;
+                        
+                        item.addEventListener('click', () => {
+                            searchInput.value = placeData[place].title;
+                            showPage('details-page', place);
+                            suggestionsBox.style.display = 'none';
+                        });
+                        suggestionsBox.appendChild(item);
+                    });
+                    suggestionsBox.style.display = 'block';
+                } else {
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+
+            // Handle search button click
+            searchButton.addEventListener('click', () => {
+                const query = searchInput.value.toLowerCase().trim();
+                const foundKey = places.find(place => placeData[place].title.toLowerCase().includes(query) || place.includes(query));
+                if (foundKey) {
+                    showPage('details-page', foundKey);
+                    suggestionsBox.style.display = 'none';
+                } else {
+                    alert('Location not found. Please try a keyword like "Infosys" or "Palace".');
+                }
+            });
+
+            // Handle clicking outside the suggestions box
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.autocomplete-wrapper')) {
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+
+            // Initial Page Load (Handle Hash links for direct navigation)
+            const hash = window.location.hash.slice(1);
+            if (hash) {
+                const key = hash.replace(/-/g, ' ');
+                if (placeData[key]) {
+                    showPage('details-page', key);
+                } else {
+                    showPage('home-content');
+                }
+            } else {
+                showPage('home-content');
+            }
+        });
+
+
+        // --- 4. THREE.JS 3D GALAXY ANIMATION ---
+
+        window.onload = function() {
+            const canvas = document.getElementById('galaxy-bg');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            scene.fog = new THREE.FogExp2(0x000000, 0.001);
+
+            // Create the Starfield (Particle System)
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 10000;
+            const positions = new Float32Array(starCount * 3);
+            
+            // Generate random positions
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 1000;
+                positions[i + 1] = (Math.random() - 0.5) * 1000;
+                positions[i + 2] = (Math.random() - 0.5) * 1000;
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const starMaterial = new THREE.PointsMaterial({
+                size: 0.8,
+                sizeAttenuation: true,
+                color: 0xffffff,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                depthWrite: false
+            });
+
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+
+            // Create a secondary, closer star layer for depth effect
+            const starsClose = new THREE.Points(starGeometry.clone(), new THREE.PointsMaterial({
+                size: 1.2,
+                sizeAttenuation: true,
+                color: 0x00bfff,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                depthWrite: false
+            }));
+            starsClose.scale.set(0.5, 0.5, 0.5);
+            scene.add(starsClose);
+
+
+            camera.position.z = 5;
+
+            // Animation Loop
+            const clock = new THREE.Clock();
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const elapsedTime = clock.getElapsedTime();
+
+                // Rotate the overall starfield (slow, subtle movement)
+                stars.rotation.y = elapsedTime * 0.005;
+                stars.rotation.x = elapsedTime * 0.003;
+                
+                // Rotate the closer starfield faster for parallax
+                starsClose.rotation.y = -elapsedTime * 0.01;
+                starsClose.rotation.x = -elapsedTime * 0.008;
+
+                // Call for mouse-based camera movement
+                updateCamera();
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle Window Resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+            });
+
+            // Mouse Parallax Interaction Variables
+            let targetX = 0;
+            let targetY = 0;
+            const sensitivity = 0.0001; 
+
+            window.addEventListener('mousemove', (event) => {
+                // Map mouse position to a normalized coordinate (-1 to 1)
+                targetX = (event.clientX / window.innerWidth) - 0.5;
+                targetY = (event.clientY / window.innerHeight) - 0.5;
+            });
+
+            // Update camera position using LERP for smooth movement
+            function updateCamera() {
+                // Target camera position based on mouse position
+                const targetCameraX = targetX * 10;
+                const targetCameraY = -targetY * 10; 
+
+                // Smoothly move the camera towards the target
+                camera.position.x += (targetCameraX - camera.position.x) * 0.05;
+                camera.position.y += (targetCameraY - camera.position.y) * 0.05;
+                
+                camera.lookAt(scene.position);
+            }
+        };
+    </script>
+</body>
+</html>

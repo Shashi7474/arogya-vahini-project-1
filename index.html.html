@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Industrial Tour: Detailed Search View</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* GLOBAL STYLES */
+        :root {
+            --primary-color: #004d40;
+            --secondary-color: #ffd700;
+            --text-color: #333;
+            --bg-color: #f4f4f4;
+            --font-stack: 'Roboto', sans-serif;
+            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        html { scroll-behavior: smooth; }
+        body { margin: 0; font-family: var(--font-stack); color: var(--text-color); background-color: #fff; }
+
+        /* NAVIGATION BAR */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background-color: var(--primary-color); box-shadow: var(--shadow-light); position: sticky; top: 0; z-index: 200; }
+        .logo a { color: #fff; font-size: 1.5em; font-weight: bold; text-decoration: none; }
+        .nav-links a { color: #fff; text-decoration: none; margin-left: 25px; padding: 8px 15px; transition: background-color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        .menu-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer; }
+
+        /* SEARCH BAR */
+        .search-container { padding: 15px 5%; display: flex; justify-content: center; align-items: center; gap: 10px; background-color: var(--bg-color); box-shadow: 0 2px 3px rgba(0, 0, 0, 0.05); z-index: 100; }
+        .autocomplete-wrapper { position: relative; flex-grow: 1; max-width: 400px; }
+        #search-input { width: 100%; padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; outline: none; transition: border-color 0.3s; }
+        .suggestions-box { position: absolute; width: 100%; background-color: #fff; border: 1px solid #ccc; border-top: none; border-radius: 0 0 5px 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 150; max-height: 200px; overflow-y: auto; }
+        .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .highlight { font-weight: bold; color: var(--primary-color); }
+
+        /* MAIN CONTENT SECTIONS - Subtle 3D lift */
+        .content-section { 
+            padding: 60px 5%; 
+            border-bottom: 1px solid #eee; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); 
+            margin-bottom: 1px;
+            position: relative;
+        }
+        .content-section h2 { text-align: center; color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid var(--secondary-color); display: inline-block; padding-bottom: 5px; }
+
+        /* --------------------- 3D ANIMATION EFFECTS --------------------- */
+        
+        /* CTA Button Floating Effect */
+        .cta-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .cta-button:hover {
+            background-color: #ffc400;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Gallery Item 3D Pop and Rotate Effect */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .gallery-item {
+            overflow: hidden;
+            border-radius: 12px;
+            background: #fff;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gallery-item:hover {
+            transform: perspective(1000px) translateZ(10px) translateY(-5px) rotateY(3deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px; 
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* --------------------- NEW: DETAILS PAGE STYLES --------------------- */
+        #details-page {
+            padding: 40px 5%;
+            background-color: #ffffff;
+            min-height: 80vh;
+            display: none; /* Initially hidden */
+        }
+        #details-page h2 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            text-align: left;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        .detail-hero-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-3d);
+        }
+        .detail-info {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+        .sources-list li {
+            margin-bottom: 8px;
+        }
+        .back-button {
+            margin-bottom: 20px;
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover { background-color: #aaa; }
+
+        @media (max-width: 768px) {
+            .detail-info {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo"><a href="#" onclick="showPage('home-content')">🗺️ Industrial Visit</a></div>
+        <nav class="nav-links" id="navLinks">
+            <a href="#" onclick="showPage('home-content')">Home</a>
+            <a href="#roadmap">Roadmap</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#essentials">Essentials & FAQ</a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <div class="search-container" id="search-bar">
+        <div class="autocomplete-wrapper">
+            <input type="text" id="search-input" placeholder="Search a place (e.g., Infosys, Palace)" autocomplete="off">
+            <div id="suggestions-box" class="suggestions-box"></div>
+        </div>
+        <button id="search-button"><i class="fas fa-search"></i> Search</button>
+    </div>
+    
+    <div id="home-content">
+        <section id="home">
+            <div class="hero-content">
+                <h1>Mysore & Bangalore Expedition 2026</h1>
+                <p>A 3-Day journey combining industrial exposure at Infosys & QSpiders with the culture of Karnataka.</p>
+                <a href="#roadmap" class="cta-button">View the Full Itinerary</a>
+            </div>
+        </section>
+        
+        <section id="roadmap" class="content-section">
+            <h2>🗺️ Trip Roadmap: Day-by-Day Itinerary</h2>
+            <div class="day-plan" id="day-1-mysore"><h3>Day 1: Mysore</h3><p>Infosys Visit & Mysore Palace.</p></div>
+            <div class="day-plan" id="day-2-mysore-channarayapatana"><h3>Day 2: Nature & Transit</h3><p>Chamundi Betta & Brindavan Gardens.</p></div>
+            <div class="day-plan" id="day-3-bangalore"><h3>Day 3: Bangalore</h3><p>QSpiders Visit & Departure.</p></div>
+        </section>
+        
+        <section id="gallery" class="content-section" style="background-color: var(--bg-color);">
+            <h2>📸 Photo Gallery</h2>
+            <p style="text-align: center; margin-bottom: 40px;">Click on images to see the 3D lift!</p>
+            
+            <div class="gallery-grid">
+                <h3 class="gallery-location-header">New Uploads (4 Photos)</h3>
+                <div class="gallery-item"><img src="download (11).jpeg" alt="New Image 1"></div>
+                <div class="gallery-item"><img src="download (12).jpeg" alt="New Image 2"></div>
+                <div class="gallery-item"><img src="download (13).jpeg" alt="New Image 3"></div>
+                <div class="gallery-item"><img src="download (14).jpeg" alt="New Image 4"></div>
+                
+                <h3 class="gallery-location-header">Core Locations (10 Photos)</h3>
+                <div class="gallery-item"><img src="images.jpeg" alt="Mysore Palace"></div>
+                <div class="gallery-item"><img src="download (7).jpeg" alt="Infosys Dome"></div>
+                <div class="gallery-item"><img src="download (5).jpeg" alt="Infosys Aerial View"></div>
+                <div class="gallery-item"><img src="download (6).jpeg" alt="Infosys Campus"></div>
+                <div class="gallery-item"><img src="download (9).jpeg" alt="Chamundi Temple Tank"></div>
+                <div class="gallery-item"><img src="download (10).jpeg" alt="QSpiders Office"></div>
+                <div class="gallery-item"><img src="download (2).jpeg" alt="Brindavan Fountain"></div>
+                <div class="gallery-item"><img src="download (3).jpeg" alt="Brindavan Garden 1"></div>
+                <div class="gallery-item"><img src="download (4).jpeg" alt="Brindavan Garden 2"></div>
+                <div class="gallery-item"><img src="download (8).jpeg" alt="Mysore Dolls"></div>
+            </div>
+        </section>
+
+        <section id="essentials" class="content-section">
+            <h2>🎒 Essentials & FAQ</h2>
+            <div style="max-width: 700px; margin: 0 auto;">
+                <h3>What to Pack:</h3>
+                <ul>
+                    <li>**Formal Attire** for Infosys and QSpiders visits.</li>
+                    <li>Comfortable walking shoes.</li>
+                </ul>
+            </div>
+        </section>
+        
+    </div> <section id="details-page">
+        <button class="back-button" onclick="showPage('home-content')"><i class="fas fa-arrow-left"></i> Back to Homepage</button>
+        <h2 id="detail-title">Place Name (Dynamic)</h2>
+        <img id="detail-hero-image" class="detail-hero-image" src="" alt="Detail Image">
+        <div class="detail-info">
+            <div id="detail-description">
+                </div>
+            <div id="detail-sources-images">
+                <h3>Location Details & Sources</h3>
+                <p><strong>Visited on Trip Day:</strong> <span id="detail-day"></span></p>
+                <p><strong>Official Website/Source:</strong> <a id="detail-source-link" href="#" target="_blank">Link</a></p>
+                
+                <h4>Detailed Image Gallery</h4>
+                <div id="detail-image-gallery" class="gallery-grid">
+                    </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 College Name | Organized by the Dept. of XYZ</p>
+    </footer>
+
+    <script>
+        // --- 1. DATA STRUCTURE (Stores all place info) ---
+        const placeData = {
+            "mysore palace": {
+                title: "Mysore Palace (Amba Vilas Palace)",
+                day: "Day 1",
+                description: "<p>The historical palace and royal residence of the Wadiyar dynasty. It is known for its Indo-Saracenic architecture, featuring a blend of Hindu, Muslim, Rajput, and Gothic styles. It is one of the most visited tourist attractions in India.</p><h3>Student Focus:</h3><ul><li>**Architectural Study:** Analyze the fusion of architectural styles.</li><li>**History:** Learn about the Kingdom of Mysore and its royal patrons.</li></ul>",
+                heroImage: "images.jpeg",
+                sourceLink: "https://mysorepalace.karnataka.gov.in/",
+                images: ["images.jpeg", "download (8).jpeg", "download (11).jpeg"] 
+            },
+            "infosys": {
+                title: "Infosys Mysore Campus (Global Education Center)",
+                day: "Day 1",
+                description: "<p>A massive, state-of-the-art training campus known for its iconic dome and modern infrastructure. It serves as the primary training ground for Infosys' new recruits.</p><h3>Student Focus:</h3><ul><li>**Industrial Insight:** Understanding corporate culture and IT infrastructure.</li><li>**Scale & Technology:** Observe the magnitude of professional training facilities.</li></ul>",
+                heroImage: "download (7).jpeg",
+                sourceLink: "https://www.infosys.com/",
+                images: ["download (7).jpeg", "download (5).jpeg", "download (6).jpeg", "download (12).jpeg"]
+            },
+            "chamundi hills": {
+                title: "Chamundi Hills & Temple",
+                day: "Day 2",
+                description: "<p>Home to the Chamundeshwari Temple, a major pilgrimage site. The hill provides a panoramic view of Mysore city. The steps and the monolithic Nandi statue are key points of interest.</p><h3>Student Focus:</h3><ul><li>**Geographic Study:** Observation of the city layout from a high vantage point.</li><li>**Cultural Heritage:** Study of Dravidian temple architecture.</li></ul>",
+                heroImage: "download (9).jpeg",
+                sourceLink: "#", // No specific official website
+                images: ["download (9).jpeg", "download (13).jpeg"]
+            },
+            "qspiders": {
+                title: "QSpiders Bangalore (Training Institute)",
+                day: "Day 3",
+                description: "<p>A specialized training institute focused on software testing and skill development. The visit is crucial for students seeking career guidance in the software industry.</p><h3>Student Focus:</h3><ul><li>**Career Guidance:** Interaction with industry experts on job prospects.</li><li>**Skill Development:** Understanding required skills beyond academic curriculum.</li></ul>",
+                heroImage: "download (10).jpeg",
+                sourceLink: "https://www.qspiders.com/",
+                images: ["download (10).jpeg", "download (14).jpeg"]
+            },
+            "brindavan garden": {
+                title: "Brindavan Gardens (KRS Dam)",
+                day: "Day 2",
+                description: "<p>Located below the Krishnarajasagara (KRS) Dam, these beautiful gardens are famous for their symmetrical design and the spectacular musical fountain show in the evening.</p><h3>Student Focus:</h3><ul><li>**Engineering:** Briefing on the KRS Dam structure and water management.</li><li>**Relaxation:** Evening cultural and natural experience.</li></ul>",
+                heroImage: "download (2).jpeg",
+                sourceLink: "#",
+                images: ["download (2).jpeg", "download (3).jpeg", "download (4).jpeg"]
+            }
+        };
+
+        const availableLocations = Object.keys(placeData).map(key => ({
+            name: placeData[key].title,
+            key: key
+        }));
+
+
+        // --- 2. MULTI-PAGE VIEW CONTROL ---
+        const homeContent = document.getElementById('home-content');
+        const detailsPage = document.getElementById('details-page');
+        const searchBar = document.getElementById('search-bar');
+
+        function showPage(pageId) {
+            if (pageId === 'home-content') {
+                homeContent.style.display = 'block';
+                detailsPage.style.display = 'none';
+                searchBar.style.display = 'flex';
+                // Reset scroll position and clear search
+                window.scrollTo(0, 0);
+                searchInput.value = ''; 
+                suggestionsBox.innerHTML = '';
+            } else if (pageId === 'details-page') {
+                homeContent.style.display = 'none';
+                detailsPage.style.display = 'block';
+                searchBar.style.display = 'none';
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // --- 3. SEARCH & DETAILS RENDERING LOGIC ---
+        const searchInput = document.getElementById('search-input');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        const searchButton = document.getElementById('search-button');
+
+        function renderDetailsPage(key) {
+            const data = placeData[key];
+            if (!data) return;
+
+            // 1. Update Details Page Elements
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-hero-image').src = data.heroImage;
+            document.getElementById('detail-hero-image').alt = data.title;
+            document.getElementById('detail-description').innerHTML = data.description;
+            document.getElementById('detail-day').textContent = data.day;
+            document.getElementById('detail-source-link').href = data.sourceLink;
+            document.getElementById('detail-source-link').textContent = data.sourceLink === '#' ? 'Not Available' : data.sourceLink;
+
+
+            // 2. Render Image Gallery for the specific place
+            const galleryContainer = document.getElementById('detail-image-gallery');
+            galleryContainer.innerHTML = ''; // Clear previous images
+            data.images.forEach(imageSrc => {
+                const item = document.createElement('div');
+                item.classList.add('gallery-item');
+                item.innerHTML = `<img src="${imageSrc}" alt="${data.title} image">`;
+                galleryContainer.appendChild(item);
+            });
+
+            // 3. Switch View
+            showPage('details-page');
+        }
+
+        function performSearch(locationKey) {
+            const location = placeData[locationKey];
+            if (location) {
+                renderDetailsPage(locationKey);
+            } else {
+                alert(`No detailed information found for "${searchInput.value}".`);
+            }
+            suggestionsBox.innerHTML = ''; 
+        }
+        
+        // Autocomplete Input Handler
+        searchInput.addEventListener('input', function() {
+            let query = this.value.toLowerCase();
+            suggestionsBox.innerHTML = '';
+            if (query.length === 0) { return; }
+
+            let matches = availableLocations.filter(location => 
+                location.name.toLowerCase().includes(query)
+            );
+            
+            matches.forEach(location => {
+                const item = document.createElement('div');
+                item.classList.add('suggestion-item');
+                const regex = new RegExp(query, 'gi');
+                item.innerHTML = location.name.replace(regex, (match) => 
+                    `<span class="highlight">${match}</span>`
+                );
+                item.addEventListener('click', function() {
+                    searchInput.value = location.name;
+                    suggestionsBox.innerHTML = ''; 
+                    performSearch(location.key);
+                });
+                suggestionsBox.appendChild(item);
+            });
+        });
+
+        // Search Button Handler
+        searchButton.addEventListener('click', function() {
+            const locationName = searchInput.value.trim().toLowerCase();
+            const location = availableLocations.find(loc => loc.name.toLowerCase() === locationName || loc.key === locationName);
+            if (location) {
+                performSearch(location.key);
+            } else {
+                 alert(`No detailed information found for "${searchInput.value}". Please select from the suggestions.`);
+            }
+        });
+
+        // Enter Key Handler
+        searchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                const locationName = searchInput.value.trim().toLowerCase();
+                const location = availableLocations.find(loc => loc.name.toLowerCase() === locationName || loc.key === locationName);
+                if (location) {
+                    performSearch(location.key);
+                }
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!suggestionsBox.contains(event.target) && event.target !== searchInput) {
+                suggestionsBox.innerHTML = '';
+            }
+        });
+
+
+        // --- 4. MOBILE MENU LOGIC (UNCHANGED) ---
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        menuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            const icon = menuToggle.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Initial setup: Ensure only the home page is visible when loaded
+        showPage('home-content');
+    </script>
+</body>
+</html>
